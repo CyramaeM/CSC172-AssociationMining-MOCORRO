@@ -1,56 +1,76 @@
 # CSC172 Association Rule Mining Progress Report
+
 **Student:** Cyramae P. Mocorro, 2018-1345  
-**Date:** December 16,2025
+**Date:** December 16, 2025  
 **Repository:** https://github.com/CyramaeM/CSC172-AssociationMining-MOCORRO  
 
+---
+
 ## 📊 Current Status
+
 | Milestone | Status | Notes |
 |-----------|--------|-------|
-| Dataset Preparation | ✅ Completed | 9,835 transactions processed |
-| Data Preprocessing | ✅ Completed | One-hot encoded matrix ready |
-| EDA & Visualization | ✅ In Progress | Item frequencies + basket sizes done |
-| Apriori Implementation | ⏳ Pending | Initial run tomorrow |
-| Rule Evaluation | ⏳ Not Started | Planned for next day |
+| Dataset Preparation | ✅ Completed | Movie metadata and ratings merged successfully |
+| Data Preprocessing | ✅ Completed | Cleaned ratings, one-hot encoded transaction matrix |
+| EDA & Visualization | ✅ Completed | Rating distribution, top movies, sparsity heatmap |
+| Apriori Implementation | ✅ Completed | Frequent itemsets generated (min_support = 0.05) |
+| Rule Evaluation | ✅ Completed | Confidence, lift-based filtering applied |
 
+---
 
 ## 1. Dataset Progress
-- **Total transactions:** 9,835
-- **Unique items:** 169 → filtered to top 50 (support > 0.01)
-- **Matrix size:** 9,708 transactions × 50 items (2.1% density)
-- **Preprocessing applied:** Missing values removed, one-hot encoding, infrequent item filtering
+
+- **Total users (transactions):** 671  
+- **Total ratings processed:** 100,000+ (ratings_small subset)  
+- **Unique movies after filtering:** ~1,000  
+- **Final transaction matrix:** 671 users × selected movies  
+- **Preprocessing applied:**  
+  - Missing values removed  
+  - Movie IDs converted to numeric  
+  - Ratings filtered (rating ≥ 4.0)  
+  - One-hot encoding using TransactionEncoder  
 
 **Sample transaction preview:**
-Transaction 1: ['whole milk', 'other vegetables', 'root vegetables']
-Transaction 2: ['yogurt', 'whole milk', 'rolls/buns']
 
+- Transaction 1 (User 1): `['Toy Story', 'Jumanji', 'Heat']`  
+- Transaction 2 (User 2): `['GoldenEye', 'Casino']`  
 
+---
 
 ## 2. EDA Progress
 
-**Key Findings (so far):**
-![Item Frequency Distribution](results/item_frequencies.png)
-- Top 5 items: whole milk(25.3%), other vegetables(19.1%), rolls/buns(17.4%)
-- Average basket size: 2.4 items
-- 68% transactions contain 1-3 items
+**Key Findings:**
+- Ratings are skewed toward higher values (4.0–5.0)
+- A small number of movies dominate user ratings
+- Transaction matrix is sparse, which is expected in recommendation datasets
 
 **Current Metrics:**
+
 | Metric | Value |
-|--------|-------|
-| Transactions cleaned | 9,708/9,835 (98.7%) |
-| Sparsity reduced | 0.12% → 2.1% |
-| Top item support | whole milk: 0.253 |
+|-------|-------|
+| Cleaned ratings | ~95% retained |
+| Positive ratings threshold | ≥ 4.0 |
+| Transaction sparsity | High (binary matrix) |
+| Top rated movie | Appears in most transactions |
+
+---
 
 ## 3. Challenges Encountered & Solutions
+
 | Issue | Status | Resolution |
-|-------|--------|------------|
-| High matrix sparsity | ✅ Fixed | Filtered to top 50 items |
-| Memory usage (1.2GB) | ✅ Fixed | Sparse matrix format |
-| Infrequent items | ⏳ Ongoing | Tuning min_support threshold |
+|------|--------|------------|
+| Duplicate preprocessing steps | ✅ Fixed | Refactored notebook cells |
+| Sparse transaction matrix | ✅ Expected | Used min_support filtering |
+| Rule interpretability | ✅ Fixed | Converted rules to natural language |
+
+---
 
 ## 4. Next Steps (Before Final Submission)
-- [ ] Complete co-occurrence heatmap
-- [ ] Run initial Apriori (min_support=0.02)
-- [ ] Generate top 25 rules with metrics
-- [ ] Create rule scatter plot 
-- [ ] Record 5-min demo video
-- [ ] Write complete README.md 
+
+- [x] Generate readable rules (“People who like A also like B”)
+- [x] Visualize rule confidence vs lift
+- [ ] Fine-tune min_support and confidence thresholds
+- [ ] Export top rules to CSV
+- [ ] Finalize README and notebook markdown
+- [ ] Prepare short video presentation
+
