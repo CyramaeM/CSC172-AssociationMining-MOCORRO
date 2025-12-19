@@ -1,158 +1,149 @@
-# [Project Title: e.g. Retail Market Basket Analysis]
+# Movie Recommendation Pattern Mining using Association Rules
+
 **CSC172 Data Mining and Analysis Final Project**  
-*Mindanao State University - Iligan Institute of Technology*  
-**Student:** [Your Full Name], [Student ID]  
-**Semester:** [e.g., AY 2025-2026 Sem 1]  
+*Mindanao State University – Iligan Institute of Technology*  
+
+**Student:** Cyramae P. Mocorro, 2018-1345  
+**Semester:** AY 2025–2026, Semester 1  
+
+---
 
 ## Abstract
-This project implements the Apriori algorithm for association rule mining on [dataset name] containing [X] transactions. Key findings include [top rule example: "if {bread} then {butter}" with lift=2.3]. The analysis pipeline includes data preprocessing, exploratory data analysis (EDA), rule generation, and evaluation using support, confidence, lift, and conviction metrics. Business insights and actionable recommendations are derived from the strongest rules.
 
-## Table of Contents
-- [Abstract](#abstract)
-- [1. Introduction](#1-introduction)
-  - [1.1 Problem Statement](#11-problem-statement)
-  - [1.2 Objectives](#12-objectives)
-  - [1.3 Scope and Limitations](#13-scope-and-limitations)
-- [2. Dataset Description](#2-dataset-description)
-  - [2.1 Source and Acquisition](#21-source-and-acquisition)
-  - [2.2 Data Structure](#22-data-structure)
-  - [2.3 Sample Transactions](#23-sample-transactions)
-- [3. Methodology](#3-methodology)
-  - [3.1 Data Preprocessing](#31-data-preprocessing)
-  - [3.2 Exploratory Data Analysis](#32-exploratory-data-analysis)
-  - [3.3 Apriori Algorithm Implementation](#33-apriori-algorithm-implementation)
-  - [3.4 Evaluation Metrics](#34-evaluation-metrics)
-- [4. Results](#4-results)
-  - [4.1 Top Association Rules](#41-top-association-rules)
-  - [4.2 Key Visualizations](#42-key-visualizations)
-  - [4.3 Performance Metrics](#43-performance-metrics)
-- [5. Discussion](#5-discussion)
-  - [5.1 Business Insights](#51-business-insights)
-  - [5.2 Actionable Recommendations](#52-actionable-recommendations)
-  - [5.3 Limitations](#53-limitations)
-- [6. Conclusion](#6-conclusion)
-- [7. Video Presentation](#7-video-presentation)
-- [References](#references)
-- [Appendix: Full Results](#appendix-full-results)
+This project applies association rule mining to a movie ratings dataset to uncover patterns in user preferences. Using the Apriori algorithm, the study identifies relationships such as *“People who like Movie A also like Movie B.”* The analysis pipeline includes data cleaning, transformation of user ratings into transaction format, exploratory data analysis, rule generation, and evaluation using support, confidence, and lift metrics. The results demonstrate the potential of association rules in building interpretable movie recommendation systems.
 
-
+---
 
 ## 1. Introduction
+
 ### 1.1 Problem Statement
-[Describe the business problem or research question. Example: "Identify product purchase patterns in retail transactions to optimize store layout and cross-selling strategies."]
+Movie streaming platforms store large volumes of user ratings, but extracting meaningful relationships between movies is challenging. This project aims to discover co-liked movies based on user ratings to support recommendation strategies.
 
 ### 1.2 Objectives
-- Preprocess transactional data for association mining
-- Implement Apriori algorithm with parameter tuning
-- Generate and evaluate top association rules
-- Visualize patterns and derive business insights
+- Preprocess movie metadata and user ratings
+- Convert ratings into transaction-based format
+- Apply Apriori algorithm for association rule mining
+- Generate interpretable movie recommendation rules
+- Visualize and evaluate rule strength
 
 ### 1.3 Scope and Limitations
-**Scope:** Single snapshot analysis of grocery purchase patterns using Apriori algorithm  
-**Limitations:** No temporal analysis, static customer behavior, computational constraints on full itemset space
+**Scope:**  
+Analysis is limited to a subset of the MovieLens dataset using binary “liked” interactions.
+
+**Limitations:**  
+- No temporal viewing behavior  
+- No demographic user data  
+- Ratings treated as binary (liked / not liked)
+
+---
 
 ## 2. Dataset Description
+
 ### 2.1 Source and Acquisition
-**Source:** [Groceries Dataset (UCI/Kaggle)](https://www.kaggle.com/datasets/heeraldedhia/groceries-dataset)  
-**Size:** 9,835 transactions, 169 unique items  
-**Format:** Member ID + timestamp + product name → Transaction basket format
+**Source:** MovieLens Dataset  
+- `movies_metadata.csv`
+- `ratings_small.csv`
 
 ### 2.2 Data Structure
-Raw format (one row per item):
-member_id,date,product
-1,2023-01-01,whole milk
-1,2023-01-01,other vegetables
-2,2023-01-01,yogurt
 
-Transaction format (one row per basket):
-[['whole milk', 'other vegetables'], ['yogurt', 'whole milk']]
+Raw format:
+userId, movieId, rating
+1, 31, 4.0
+1, 1029, 5.0
+
+Transaction format:
 
 
 ### 2.3 Sample Transactions
-Transaction 1: ['whole milk', 'other vegetables', 'root vegetables']
-Transaction 2: ['yogurt', 'whole milk', 'rolls/buns']
-Transaction 3: ['sausage', 'frankfurter', 'soda']
+- User 1: `['Toy Story', 'Jumanji', 'Heat']`
+- User 2: `['GoldenEye', 'Casino']`
+- User 3: `['Seven', 'Usual Suspects']`
 
+---
 
 ## 3. Methodology
 
 ### 3.1 Data Preprocessing
-1. **Missing Value Handling:** Removed 127 incomplete transactions (1.3%)
-2. **One-Hot Encoding:** Converted to 9,708 × 169 binary transaction matrix
-3. **Item Filtering:** Retained top 50 items (support > 0.01) → 9,708 × 50 matrix
-4. **Final Dataset:** 9,708 transactions × 50 items (98.7% sparsity reduced to manageable size)
-
-**Before/After Statistics:**
-| Metric | Raw Data | Processed Data |
-|--------|----------|----------------|
-| Transactions | 9,835 | 9,708 |
-| Unique Items | 169 | 50 |
-| Density | 0.12% | 2.1% |
+1. Removed missing movie titles and ratings  
+2. Converted movie IDs to numeric  
+3. Filtered ratings ≥ 4.0 (liked movies)  
+4. Grouped movies per user  
+5. One-hot encoded transactions using TransactionEncoder  
 
 ### 3.2 Exploratory Data Analysis
-- **Top 10 Items:** whole milk (25.3%), other vegetables (19.1%), rolls/buns (17.4%)
-- **Basket Size:** Mean=2.4 items, 68% transactions contain 1-3 items
-- **Co-occurrence:** whole milk appears with 89% of top 20 items
+- Rating distribution shows positive bias
+- Few popular movies dominate ratings
+- Transaction matrix is sparse but suitable for Apriori
 
 ### 3.3 Apriori Algorithm Implementation
-**Implementation:** mlxtend.frequent_patterns.apriori() with association_rules()
+Implemented using:
+- `apriori()` for frequent itemsets
+- `association_rules()` for rule generation
 
 ### 3.4 Evaluation Metrics
-- **Support:** \( \frac{\text{support}(A \cup B)}{N} \) - Absolute frequency
-- **Confidence:** \( \frac{\text{support}(A \cup B)}{\text{support}(A)} \) - Rule strength
-- **Lift:** \( \frac{\text{confidence}(A \to B)}{\text{support}(B)} \) - Rule interestingness (>1 = positive association)
+- **Support:** Frequency of itemset occurrence  
+- **Confidence:** Likelihood of consequent given antecedent  
+- **Lift:** Strength of association (>1 indicates positive correlation)
 
+---
 
 ## 4. Results
+
 ### 4.1 Top Association Rules
 
-| Rank | Antecedents | Consequents | Support | Confidence | Lift | Conviction | Leverage |
-|------|-------------|-------------|---------|------------|------|------------|----------|
-| 1 | {other vegetables} | {root vegetables} | 0.023 | 0.74 | 3.15 | 3.42 | 0.017 |
-| 2 | {yogurt} | {whole milk} | 0.028 | 0.68 | 2.12 | 2.31 | 0.015 |
-| 3 | {rolls/buns} | {whole milk} | 0.032 | 0.62 | 1.98 | 2.01 | 0.016 |
-| 4 | {sausage} | {frankfurter} | 0.015 | 0.81 | 4.23 | 4.67 | 0.012 |
-| 5 | {tropical fruit} | {other vegetables} | 0.021 | 0.65 | 2.34 | 2.41 | 0.014 |
+| Rule | Confidence | Lift |
+|----|------------|------|
+| People who like High Noon also like Terminator 3: Rise of the Machines | 0.90 | 2.39 |
+| People who like Point Break also like Terminator 3: Rise of the Machines | 0.85 | 2.27 |
+| People who like The Talented Mr. Ripley also like Terminator 3: Rise of the Machines | 0.85 | 2.25 |
+| People who like Waiter also like Muxmäuschenstill | 0.82 | 9.82 |
+| People who like The Science of Sleep also like Terminator 3: Rise of the Machines | 0.82 | 2.18 |
 
 ### 4.2 Key Visualizations
-![Item Frequency Distribution](results/item_frequencies.png) 
+- Rating distribution plot
+- Top-rated movies bar chart
+- Transaction heatmap
+- Confidence vs lift scatter plot
 
 ### 4.3 Performance Metrics
-Runtime: Preprocessing=42s, Apriori=18s, Rules=3s (Total: 63s)
-Scalability: Handles 10K+ transactions on standard laptop
+- Efficient execution on standard laptop
+- Apriori completed within seconds on filtered dataset
 
+---
 
 ## 5. Discussion
 
-### 5.1 Business Insights
-1. **Dairy Clustering:** whole milk as "hub item" (89% co-occurrence)
-2. **Vegetable Pairing:** root vegetables strongly associated with other vegetables
-3. **Breakfast Bundle:** yogurt + whole milk + rolls/buns (lift=2.1)
+### 5.1 Insights
+- Popular movies act as hubs in association rules
+- Strong genre-based relationships emerge
+- High-lift rules suggest meaningful co-preference
 
-### 5.2 Actionable Recommendations
-1. **Shelf Placement:** Place root vegetables near other vegetables
-2. **Bundling:** Promote "Breakfast Pack" (yogurt + milk + rolls)
-3. **Cross-promotion:** sausage → frankfurter discount coupons
-4. **Inventory:** Stock 25% more whole milk based on pairing frequency
+### 5.2 Recommendations
+- Use rules for movie recommendations
+- Suggest similar movies after user interaction
+- Group related movies in platform UI
 
 ### 5.3 Limitations
-- Single time period (no seasonality)
-- No customer demographics
-- Binary presence/absence (no quantities)
+- Binary ratings reduce nuance
+- No personalization beyond co-occurrence
+
+---
 
 ## 6. Conclusion
-The Apriori algorithm successfully identified 25 actionable association rules from 9,708 grocery transactions. Strongest patterns reveal natural product groupings (lift > 3.0) suitable for retail optimization. Future work includes temporal analysis, customer segmentation, and FP-Growth comparison.
 
+The project successfully demonstrates how association rule mining can uncover meaningful patterns in movie ratings data. The Apriori algorithm produced interpretable and actionable rules suitable for recommendation systems.
+
+---
 
 ## 7. Video Presentation
-[![Final Presentation](demo/CSC172_[LastName]_Final.mp4)](demo/CSC172_[LastName]_Final.mp4)  
-*5-minute demo: Problem → Dataset → Methods → Key Findings → Business Insights*
+*A 5-minute demo explaining the dataset, methodology, and key findings.*
+
+---
 
 ## References
-1. Agrawal, R., & Srikant, R. (1994). Fast Algorithms for Mining Association Rules. VLDB.
-2. mlxtend Documentation: https://rasbt.github.io/mlxtend/
-3. Groceries Dataset: https://www.kaggle.com/datasets/heeraldedhia/groceries-dataset
+1. Agrawal, R., & Srikant, R. (1994). Fast Algorithms for Mining Association Rules.  
+2. MovieLens Dataset: https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset/versions/5/data?select=ratings_small.csv
+3. mlxtend Documentation
 
-## Appendix: Full Results
-**Complete rules CSV:** [results/rules_top25.csv](results/rules_top25.csv)  
+---
 
